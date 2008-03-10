@@ -1,14 +1,20 @@
 <?php
 class FeedBurner extends Plugin {
 	
-	/* FeedBurner Feed Address
+	/* FeedBurner URL List
 	 * You MUST change this to your Feed Address.
 	 *
-	 * Example: http://feeds.feedburner.com/HabariProject
-	 * Example: HabariProject
+	 * introspection - Overall Collection Feed
+	 * collection - Overall Collection Feed
+	 * comments - Overall Comments Feed
+	 *
+	 * URL Example: http://feeds.feedburner.com/HabariProject
+	 *
+	 * Actions you do not define will not be filtered.
 	 */
-	private static $feed_url= array(
-		'entries' => 'http://feeds.feedburner.com/HabariProject',
+	private static $feedburner_feeds= array(
+		'introspection' => 'http://feeds.feedburner.com/HabariProject',
+		'collection' => 'http://feeds.feedburner.com/HabariProject',
 		'comments' => 'http://feeds.feedburner.com/HabariProject/comments',
 	);
 
@@ -25,25 +31,9 @@ class FeedBurner extends Plugin {
 			'copyright' => '2007'
 		);
 	}
-		
-	/* FeedBurner URL List
-	 * introspection - Overall Collection Feed
-	 * collection - Overall Collection Feed
-	 * comments - Overall Comments Feed
-	 *
-	 * Actions you do not define will not be filtered.
-	 */
+	
 	public function action_init_atom()
 	{
-		/* List of feeds - You MUST edit this! */
-		$feedburner_feeds= array(
-			'introspection' => self::$feed_url['entries'],
-			'collection' => self::$feed_url['entries'],
-		);
-		if ( self::$feed_url['comments'] != '' ) {
-			$feedburner_feeds['comments']= self::$feed_url['comments'];
-		}
-				
 		/* List of exclusions - You SHOULD NOT edit this! */
 		$exclude_agents= array(
 			'FeedBurner/1.0 (http://www.FeedBurner.com)', // FeedBurner.com
@@ -55,13 +45,11 @@ class FeedBurner extends Plugin {
 		
 		/* DO NOT edit below! */
 		$action= Controller::get_action();
-		if ( isset( $feedburner_feeds[$action] ) ) {
+		if ( isset( self::$feedburner_feeds[$action] ) ) {
 			if ( !in_array( $_SERVER['REMOTE_ADDR'], $exclude_ips ) ) {
 				if ( isset( $_SERVER['HTTP_USER_AGENT'] ) && !in_array( $_SERVER['HTTP_USER_AGENT'], $exclude_agents ) ) {
 					ob_clean();
-					header("302 Found HTTP/1.1");
-					header('Status: 302 Found');
-					header('Location: ' . $feedburner_feeds[$action] );
+					header( 'Location: ' . self::$feedburner_feeds[$action], TRUE, 302 );
 					die();
 				}
 			}
