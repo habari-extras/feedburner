@@ -100,8 +100,8 @@ class FeedBurner extends Plugin {
 						$stats[$stat_str]= '';
 					}
 					else {
-						$readers[]= (string) $xml->feed->entry['circulation'];
-						$reach[]= (string) $xml->feed->entry['reach'];
+						$readers[self::$feedburner_feeds[$feed]]= (string) $xml->feed->entry['circulation'];
+						$reach[self::$feedburner_feeds[$feed]]= (string) $xml->feed->entry['reach'];
 						$stats[$reader_str]= array_sum($readers);
 						$stats[$reach_str]= array_sum($reach);
 					}
