@@ -69,8 +69,8 @@ class FeedBurner extends Plugin {
 		$exclude_agents= Options::get('feedburner:exclude_agents');
 		
 		if ( $feed_url != '' ) {
-			if ( !in_array( $_SERVER['REMOTE_ADDR'], $exclude_ips ) ) {
-				if ( isset( $_SERVER['HTTP_USER_AGENT'] ) && !in_array( $_SERVER['HTTP_USER_AGENT'], $exclude_agents ) ) {
+			if ( !in_array( $_SERVER['REMOTE_ADDR'], (array) $exclude_ips ) ) {
+				if ( isset( $_SERVER['HTTP_USER_AGENT'] ) && !in_array( $_SERVER['HTTP_USER_AGENT'], (array) $exclude_agents ) ) {
 					ob_clean();
 					header( 'Location: ' . $feed_url, TRUE, 302 );
 					die();
