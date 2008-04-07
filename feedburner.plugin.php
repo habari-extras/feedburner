@@ -47,11 +47,11 @@ class FeedBurner extends Plugin {
 	 * Adds FeedBurner, FeedValidator.org and Validome.org
 	 */
 	public function reset_exclusions() {
-		Options::set('feedburner:exclude_ips', array(
+		Options::set('feedburner:exclude_agents', array(
 			'FeedBurner/1.0 (http://www.FeedBurner.com)', // FeedBurner.com
 			'FeedValidator/1.3', // FeedValidator.org
 			));
-		Options::set('feedburner:exclude_agents', array(
+		Options::set('feedburner:exclude_ips', array(
 			'212.162.14.235', // Validome.org
 			));
 		return true;
