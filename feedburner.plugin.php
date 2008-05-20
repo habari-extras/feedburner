@@ -1,6 +1,6 @@
 <?php
-class FeedBurner extends Plugin {
-
+class FeedBurner extends Plugin
+{
 	/**
 	 * Feed groups used in the dashboard statistics module
 	 * The key is the title of the statistic,
@@ -12,11 +12,12 @@ class FeedBurner extends Plugin {
 		'entries' => array( 'introspection', 'collection' ),
 		'comments' => array( 'comments' ),
 	);
-	
+
 	/**
 	 * Required Plugin Informations
 	 */
-	public function info() {
+	public function info()
+	{
 		return array(
 			'name' => 'FeedBurner',
 			'version' => '1.4',
@@ -28,32 +29,34 @@ class FeedBurner extends Plugin {
 			'copyright' => '2007'
 		);
 	}
-	
+
 	/**
 	 * Saves default (example) data
 	 */
-	public function action_plugin_activation() {
-		if (!Options::get('feedburner:installed')) {			
-			Options::set('feedburner:introspection', 'http://feeds.feedburner.com/HabariProject');
-			Options::set('feedburner:collection', 'http://feeds.feedburner.com/HabariProject');
-			Options::set('feedburner:comments', 'http://feeds.feedburner.com/HabariProject/comments');
+	public function action_plugin_activation()
+	{
+		if ( !Options::get( 'feedburner:installed' ) ) {
+			Options::set( 'feedburner:introspection', 'http://feeds.feedburner.com/HabariProject' );
+			Options::set( 'feedburner:collection', 'http://feeds.feedburner.com/HabariProject' );
+			Options::set( 'feedburner:comments', 'http://feeds.feedburner.com/HabariProject/comments' );
 			self::reset_exclusions();
-			Options::set('feedburner:installed', true);
+			Options::set( 'feedburner:installed', true );
 		}
 	}
-	
+
 	/**
 	 * Reset exclusions list to default
 	 * Adds FeedBurner, FeedValidator.org and Validome.org
 	 */
-	public function reset_exclusions() {
-		Options::set('feedburner:exclude_agents', array(
+	public function reset_exclusions()
+	{
+		Options::set( 'feedburner:exclude_agents', array(
 			'FeedBurner/1.0 (http://www.FeedBurner.com)', // FeedBurner.com
 			'FeedValidator/1.3', // FeedValidator.org
-			));
-		Options::set('feedburner:exclude_ips', array(
+			) );
+		Options::set( 'feedburner:exclude_ips', array(
 			'212.162.14.235', // Validome.org
-			));
+			) );
 		return true;
 	}
 
@@ -64,13 +67,13 @@ class FeedBurner extends Plugin {
 	public function action_init_atom()
 	{
 		$action= Controller::get_action();
-		$feed_url= Options::get('feedburner:' . $action);
-		$exclude_ips= Options::get('feedburner:exlude_ips');
-		$exclude_agents= Options::get('feedburner:exclude_agents');
-		
+		$feed_url= Options::get( 'feedburner:' . $action );
+		$exclude_ips= Options::get( 'feedburner:exlude_ips' );
+		$exclude_agents= Options::get( 'feedburner:exclude_agents' );
+
 		if ( $feed_url != '' ) {
-			if ( !in_array( $_SERVER['REMOTE_ADDR'], (array) $exclude_ips ) ) {
-				if ( isset( $_SERVER['HTTP_USER_AGENT'] ) && !in_array( $_SERVER['HTTP_USER_AGENT'], (array) $exclude_agents ) ) {
+			if ( !in_array( $_SERVER['REMOTE_ADDR'], ( array ) $exclude_ips ) ) {
+				if ( isset( $_SERVER['HTTP_USER_AGENT'] ) && !in_array( $_SERVER['HTTP_USER_AGENT'], ( array ) $exclude_agents ) ) {
 					ob_clean();
 					header( 'Location: ' . $feed_url, TRUE, 302 );
 					die();
@@ -79,20 +82,45 @@ class FeedBurner extends Plugin {
 		}
 	}
 
-	/**
-	 * Add the FeedBurner statistics to the admin dashboard
-	 *
-	 * @param array $stats Statistic summary array used in the dashboard
-	 * @return array Statistic summary array to which we appended Feedburner statistics
-	 */
-	public function filter_statistics_summary( $stats ) {
+	public function filter_admin_modules( $modules )
+	{
+		$modules['feedburner']= '<div class="options">&nbsp;</div><div class="modulecore">
+			<h2>Feedburner Stats</h2><div class="handle">&nbsp;</div>' .
+			$this->theme_feedburner_stats() .
+			'</div>';
+		return $modules;
+	}
+
+
+	public function theme_feedburner_stats()
+	{
+		if ( Cache::has( 'feedburner_stats' ) ) {
+			$stats= Cache::get( 'feedburner_stats' );
+		}
+		else {
+			$stats= $this->get_stats();
+			Cache::set( 'feedburner_stats', $stats );
+		}
+
+		$stats_table= "<table width=\"100%\">\n";
+		foreach ( $stats as $key => $count ) {
+			$stats_table.= "<tr><td>{$key}</td><td>{$count}</td></tr>\n";
+		}
+		$stats_table.= "</table>\n";
+
+		return $stats_table;
+	}
+
+	private function get_stats()
+	{
+		$stats= array();
 		foreach ( self::$feed_groups as $type => $feeds ) {
 			$readers= array();
 			$reach= array();
 			$reader_str= "FeedBurner Readers ({$type})";
 			$reach_str= "FeedBurner Reach ({$type})";
 			foreach ( $feeds as $feed ) {
-				if ( $feed_url = Options::get('feedburner:' . $feed) ) {
+				if ( $feed_url = Options::get( 'feedburner:' . $feed ) ) {
 					$awareness_api= 'http://api.feedburner.com/awareness/1.0/GetFeedData?uri=' . $feed_url;
 					$request= new RemoteRequest( $awareness_api );
 					if ( !$request->execute() ) {
@@ -104,18 +132,18 @@ class FeedBurner extends Plugin {
 						$stats[$stat_str]= '';
 					}
 					else {
-						$readers[$feed_url]= (string) $xml->feed->entry['circulation'];
-						$reach[$feed_url]= (string) $xml->feed->entry['reach'];
-						$stats[$reader_str]= array_sum($readers);
-						$stats[$reach_str]= array_sum($reach);
+						$readers[$feed_url]= ( string ) $xml->feed->entry['circulation'];
+						$reach[$feed_url]= ( string ) $xml->feed->entry['reach'];
+						$stats[$reader_str]= array_sum( $readers );
+						$stats[$reach_str]= array_sum( $reach );
 					}
 				}
 			}
 		}
-		
+
 		return $stats;
 	}
-	
+
 	/**
 	 * Add our menu to the FormUI for plugins.
 	 *
@@ -124,14 +152,14 @@ class FeedBurner extends Plugin {
 	 * @return array Original array with our added menu.
 	 */
 	public function filter_plugin_config( $actions, $plugin_id ) {
-		if ( $plugin_id == $this->plugin_id ) { 
+		if ( $plugin_id == $this->plugin_id ) {
 			$actions[]= 'Options';
 			$actions[]= 'Reset Exclusions';
 		}
-		
+
 		return $actions;
 	}
-	
+
 	/**
 	 * Handle calls from FormUI actions.
 	 * Show the form to manage the plugin's options.
@@ -149,19 +177,19 @@ class FeedBurner extends Plugin {
 					$fb_collection= $fb->add( 'text', 'collection', 'Collection:' );
 					$fb_collection->add_validator( 'validate_url' );
 					$fb_comments= $fb->add( 'text', 'comments', 'Comments:' );
-					$fb_comments->add_validator( 'validate_url' );					
-					$fb->add( 'fieldset', 'Feed Assignments', array($fb_introspection, $fb_collection, $fb_comments) );
-					
+					$fb_comments->add_validator( 'validate_url' );
+					$fb->add( 'fieldset', 'Feed Assignments', array( $fb_introspection, $fb_collection, $fb_comments ) );
+
 					$fb_exclusions= $fb->add( 'static', 'exclusions', '<p>Exclusions will not be redirected to the Feedburner service.<br><strong>Do not remove default exclusions, else the plugin will break.</strong>' );
-					$fb_agents= $fb->add( 'textmulti', 'exclude_agents', 'Agents to exclude', Options::get('feedburner:exclude_agents') );
-					$fb_ips= $fb->add( 'textmulti', 'exclude_ips', 'IPs to exclude', Options::get('feedburner:exclude_ips') );
-					$fb->add( 'fieldset', 'Exclusions', array($fb_exclusions, $fb_agents, $fb_ips) );
-					
+					$fb_agents= $fb->add( 'textmulti', 'exclude_agents', 'Agents to exclude', Options::get( 'feedburner:exclude_agents' ) );
+					$fb_ips= $fb->add( 'textmulti', 'exclude_ips', 'IPs to exclude', Options::get( 'feedburner:exclude_ips' ) );
+					$fb->add( 'fieldset', 'Exclusions', array( $fb_exclusions, $fb_agents, $fb_ips ) );
+
 					$fb->on_success( array( $this, 'save_options' ) );
 					$fb->out();
 					break;
 				case 'Reset Exclusions':
-					if (self::reset_exclusions()) {
+					if ( self::reset_exclusions() ) {
 						$fb= new FormUI( 'feedburner' );
 						$fb->add( 'static', 'reset_exclusions', '<p>The exclusions lists have been reset to the defaults.</p>' );
 						$fb->set_option( 'save_button', false );
@@ -177,7 +205,7 @@ class FeedBurner extends Plugin {
 			}
 		}
 	}
-	
+
 	/**
 	 * Fail-safe method to force options to be saved in Habari's options table.
 	 *
