@@ -85,7 +85,7 @@ class FeedBurner extends Plugin
 	public function filter_admin_modules( $modules )
 	{
 		$modules['feedburner']= '<div class="options">&nbsp;</div><div class="modulecore">
-			<h2>Feedburner Stats</h2><div class="handle">&nbsp;</div>' .
+			<h2>Feedburner Stats</h2><div class="handle">&nbsp;</div>' . "\n" .
 			$this->theme_feedburner_stats() .
 			'</div>';
 		return $modules;
@@ -102,11 +102,14 @@ class FeedBurner extends Plugin
 			Cache::set( 'feedburner_stats', $stats );
 		}
 
-		$stats_table= "<table width=\"100%\">\n";
+		$stats_table= '<ul class="items">'. "\n";
 		foreach ( $stats as $key => $count ) {
-			$stats_table.= "<tr><td>{$key}</td><td>{$count}</td></tr>\n";
+			$stats_table.= '<li class="item clear">' . "\n";
+			$stats_table.= '<span class="pct90">' . "{$key}</span>\n"; 
+			$stats_table.= '<span class="comments pct10">' . "{$count}</span>\n";
+			$stats_table.= "</li>\n";
 		}
-		$stats_table.= "</table>\n";
+		$stats_table.= "</ul>\n";
 
 		return $stats_table;
 	}
