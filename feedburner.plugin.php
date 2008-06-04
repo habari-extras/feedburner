@@ -35,12 +35,12 @@ class FeedBurner extends Plugin
 	 */
 	public function action_plugin_activation()
 	{
-		if ( !Options::get( 'feedburner:installed' ) ) {
-			Options::set( 'feedburner:introspection', 'http://feeds.feedburner.com/HabariProject' );
-			Options::set( 'feedburner:collection', 'http://feeds.feedburner.com/HabariProject' );
-			Options::set( 'feedburner:comments', 'http://feeds.feedburner.com/HabariProject/comments' );
+		if ( !Options::get( 'feedburner__installed' ) ) {
+			Options::set( 'feedburner__introspection', 'http://feeds.feedburner.com/HabariProject' );
+			Options::set( 'feedburner__collection', 'http://feeds.feedburner.com/HabariProject' );
+			Options::set( 'feedburner__comments', 'http://feeds.feedburner.com/HabariProject/comments' );
 			self::reset_exclusions();
-			Options::set( 'feedburner:installed', true );
+			Options::set( 'feedburner__installed', true );
 		}
 	}
 
@@ -50,11 +50,11 @@ class FeedBurner extends Plugin
 	 */
 	public function reset_exclusions()
 	{
-		Options::set( 'feedburner:exclude_agents', array(
+		Options::set( 'feedburner__exclude_agents', array(
 			'FeedBurner/1.0 (http://www.FeedBurner.com)', // FeedBurner.com
 			'FeedValidator/1.3', // FeedValidator.org
 			) );
-		Options::set( 'feedburner:exclude_ips', array(
+		Options::set( 'feedburner__exclude_ips', array(
 			'212.162.14.235', // Validome.org
 			) );
 		return true;
@@ -67,9 +67,9 @@ class FeedBurner extends Plugin
 	public function action_init_atom()
 	{
 		$action= Controller::get_action();
-		$feed_url= Options::get( 'feedburner:' . $action );
-		$exclude_ips= Options::get( 'feedburner:exlude_ips' );
-		$exclude_agents= Options::get( 'feedburner:exclude_agents' );
+		$feed_url= Options::get( 'feedburner__' . $action );
+		$exclude_ips= Options::get( 'feedburner__exlude_ips' );
+		$exclude_agents= Options::get( 'feedburner__exclude_agents' );
 
 		if ( $feed_url != '' ) {
 			if ( !in_array( $_SERVER['REMOTE_ADDR'], ( array ) $exclude_ips ) ) {
@@ -84,7 +84,7 @@ class FeedBurner extends Plugin
 
 	public function filter_admin_modules( $modules )
 	{
-		$modules['feedburner:1']= array( 
+		$modules['feedburner__1']= array( 
 			'name' => 'Feedburner Stats', 
 			'content' => 
 				'<div class="modulecore">' . 
@@ -127,7 +127,7 @@ class FeedBurner extends Plugin
 			$reader_str= "FeedBurner Readers ({$type})";
 			$reach_str= "FeedBurner Reach ({$type})";
 			foreach ( $feeds as $feed ) {
-				if ( $feed_url = Options::get( 'feedburner:' . $feed ) ) {
+				if ( $feed_url = Options::get( 'feedburner__' . $feed ) ) {
 					$awareness_api= 'http://api.feedburner.com/awareness/1.0/GetFeedData?uri=' . $feed_url;
 					$request= new RemoteRequest( $awareness_api );
 					if ( !$request->execute() ) {
@@ -160,7 +160,7 @@ class FeedBurner extends Plugin
 	 */
 	public function filter_plugin_config( $actions, $plugin_id ) {
 		if ( $plugin_id == $this->plugin_id ) {
-			$actions[]= 'Options';
+			$actions[]= 'Configure';
 			$actions[]= 'Reset Exclusions';
 		}
 
@@ -177,34 +177,35 @@ class FeedBurner extends Plugin
 	public function action_plugin_ui( $plugin_id, $action ) {
 		if ( $plugin_id == $this->plugin_id ) {
 			switch ( $action ) {
-				case 'Options':
+				case 'Configure':
 					$fb= new FormUI( 'feedburner' );
-					$fb_introspection= $fb->add( 'text', 'introspection', 'Introspection:' );
+					$fb_introspection= $fb->append( 'text', 'introspection', 'feedburner__introspection', 'Introspection:' );
 					$fb_introspection->add_validator( 'validate_url' );
-					$fb_collection= $fb->add( 'text', 'collection', 'Collection:' );
+					$fb_collection= $fb->append( 'text', 'collection', 'feedburner__collection', 'Collection:' );
 					$fb_collection->add_validator( 'validate_url' );
-					$fb_comments= $fb->add( 'text', 'comments', 'Comments:' );
+					$fb_comments= $fb->append( 'text', 'comments', 'feedburner__comments', 'Comments:' );
 					$fb_comments->add_validator( 'validate_url' );
-					$fb->add( 'fieldset', 'Feed Assignments', array( $fb_introspection, $fb_collection, $fb_comments ) );
+					$fb->append( 'fieldset', 'Feed Assignments', 'Feed Assignments', array( $fb_introspection, $fb_collection, $fb_comments ) );
 
-					$fb_exclusions= $fb->add( 'static', 'exclusions', '<p>Exclusions will not be redirected to the Feedburner service.<br><strong>Do not remove default exclusions, else the plugin will break.</strong>' );
-					$fb_agents= $fb->add( 'textmulti', 'exclude_agents', 'Agents to exclude', Options::get( 'feedburner:exclude_agents' ) );
-					$fb_ips= $fb->add( 'textmulti', 'exclude_ips', 'IPs to exclude', Options::get( 'feedburner:exclude_ips' ) );
-					$fb->add( 'fieldset', 'Exclusions', array( $fb_exclusions, $fb_agents, $fb_ips ) );
+					$fb_exclusions= $fb->append( 'static', 'exclusions', '<p>Exclusions will not be redirected to the Feedburner service.<br><strong>Do not remove default exclusions, else the plugin will break.</strong>' );
+					$fb_agents= $fb->append( 'textmulti', 'exclude_agents', 'feedburner__exclude_agents', 'Agents to exclude', Options::get( 'feedburner__exclude_agents' ) );
+					$fb_ips= $fb->append( 'textmulti', 'exclude_ips', 'feedburner__exclude_ips', 'IPs to exclude', Options::get( 'feedburner__exclude_ips' ) );
+					$fb->append( 'fieldset', 'Exclusions', 'Exclusions', array( $fb_exclusions, $fb_agents, $fb_ips ) );
+					$fb->append( 'submit', 'save', _t( 'Save' ) );
 
-					$fb->on_success( array( $this, 'save_options' ) );
+					//$fb->on_success( array( $this, 'save_options' ) );
 					$fb->out();
 					break;
 				case 'Reset Exclusions':
 					if ( self::reset_exclusions() ) {
 						$fb= new FormUI( 'feedburner' );
-						$fb->add( 'static', 'reset_exclusions', '<p>The exclusions lists have been reset to the defaults.</p>' );
+						$fb->append( 'static', 'reset_exclusions', 'feedburner__reset_exclusions', '<p>The exclusions lists have been reset to the defaults.</p>' );
 						$fb->set_option( 'save_button', false );
 						$fb->out();
 					}
 					else {
 						$fb= new FormUI( 'feedburner' );
-						$fb->add( 'static', 'reset_exclusions', '<p>An error occurred while trying to reset the exclusions lists, please try again or report the problem.</p>' );
+						$fb->append( 'static', 'reset_exclusions', 'feedburner__reset_exclusions', '<p>An error occurred while trying to reset the exclusions lists, please try again or report the problem.</p>' );
 						$fb->set_option( 'save_button', false );
 						$fb->out();
 					}
