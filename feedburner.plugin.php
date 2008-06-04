@@ -84,10 +84,14 @@ class FeedBurner extends Plugin
 
 	public function filter_admin_modules( $modules )
 	{
-		$modules['feedburner']= '<div class="modulecore">
-			<h2>Feedburner Stats</h2><div class="handle">&nbsp;</div>' . "\n" .
-			$this->theme_feedburner_stats() .
-			'</div>';
+		$modules['feedburner:1']= array( 
+			'name' => 'Feedburner Stats', 
+			'content' => 
+				'<div class="modulecore">' . 
+				'<h2>Feedburner Stats</h2><div class="handle">&nbsp;</div>' . "\n" .
+				$this->theme_feedburner_stats() .
+				'</div>'
+			);
 		return $modules;
 	}
 
