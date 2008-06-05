@@ -84,8 +84,8 @@ class FeedBurner extends Plugin
 
 	public function filter_admin_modules( $modules )
 	{
-		$modules['feedburner__1']= array( 
-			'name' => 'Feedburner Stats', 
+		$modules['feedburner:1']= array( 
+			'name' => 'feedburner', 
 			'content' => 
 				'<div class="modulecore">' . 
 				'<h2>Feedburner Stats</h2><div class="handle">&nbsp;</div>' . "\n" .
@@ -193,7 +193,7 @@ class FeedBurner extends Plugin
 					$fb->append( 'fieldset', 'Exclusions', 'Exclusions', array( $fb_exclusions, $fb_agents, $fb_ips ) );
 					$fb->append( 'submit', 'save', _t( 'Save' ) );
 
-					//$fb->on_success( array( $this, 'save_options' ) );
+					$fb->set_option( 'success_message', _t( 'Configuration saved' ) );
 					$fb->out();
 					break;
 				case 'Reset Exclusions':
@@ -212,15 +212,6 @@ class FeedBurner extends Plugin
 					break;
 			}
 		}
-	}
-
-	/**
-	 * Fail-safe method to force options to be saved in Habari's options table.
-	 *
-	 * @return bool Return true to force options to be saved in Habari's options table.
-	 */
-	public function save_options( $ui ) {
-		return true;
 	}
 
 }
