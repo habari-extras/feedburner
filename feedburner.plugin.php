@@ -179,18 +179,18 @@ class FeedBurner extends Plugin
 			switch ( $action ) {
 				case 'Configure':
 					$fb= new FormUI( 'feedburner' );
-					$fb_introspection= $fb->append( 'text', 'introspection', 'feedburner__introspection', 'Introspection:' );
+					$fb_assignments= $fb->append( 'fieldset', 'feed_assignments', 'Feed Assignments' );
+					$fb_introspection= $fb_assignments->append( 'text', 'introspection', 'feedburner__introspection', 'Introspection:' );
 					$fb_introspection->add_validator( 'validate_url' );
-					$fb_collection= $fb->append( 'text', 'collection', 'feedburner__collection', 'Collection:' );
+					$fb_collection= $fb_assignments->append( 'text', 'collection', 'feedburner__collection', 'Collection:' );
 					$fb_collection->add_validator( 'validate_url' );
-					$fb_comments= $fb->append( 'text', 'comments', 'feedburner__comments', 'Comments:' );
+					$fb_comments= $fb_assignments->append( 'text', 'comments', 'feedburner__comments', 'Comments:' );
 					$fb_comments->add_validator( 'validate_url' );
-					$fb->append( 'fieldset', 'Feed Assignments', 'Feed Assignments', array( $fb_introspection, $fb_collection, $fb_comments ) );
 
-					$fb_exclusions= $fb->append( 'static', 'exclusions', '<p>Exclusions will not be redirected to the Feedburner service.<br><strong>Do not remove default exclusions, else the plugin will break.</strong>' );
-					$fb_agents= $fb->append( 'textmulti', 'exclude_agents', 'feedburner__exclude_agents', 'Agents to exclude', Options::get( 'feedburner__exclude_agents' ) );
-					$fb_ips= $fb->append( 'textmulti', 'exclude_ips', 'feedburner__exclude_ips', 'IPs to exclude', Options::get( 'feedburner__exclude_ips' ) );
-					$fb->append( 'fieldset', 'Exclusions', 'Exclusions', array( $fb_exclusions, $fb_agents, $fb_ips ) );
+					$fb_exclusions= $fb->append( 'fieldset', 'exclusions', 'Exclusions' );
+					$fb_exclusions_text= $fb_exclusions->append( 'static', 'exclusions', '<p>Exclusions will not be redirected to the Feedburner service.<br><strong>Do not remove default exclusions, else the plugin will break.</strong>' );
+					$fb_agents= $fb_exclusions->append( 'textmulti', 'exclude_agents', 'feedburner__exclude_agents', 'Agents to exclude', Options::get( 'feedburner__exclude_agents' ) );
+					$fb_ips= $fb_exclusions->append( 'textmulti', 'exclude_ips', 'feedburner__exclude_ips', 'IPs to exclude', Options::get( 'feedburner__exclude_ips' ) );
 					$fb->append( 'submit', 'save', _t( 'Save' ) );
 
 					$fb->set_option( 'success_message', _t( 'Configuration saved' ) );
