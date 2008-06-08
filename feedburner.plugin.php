@@ -20,7 +20,7 @@ class FeedBurner extends Plugin
 	{
 		return array(
 			'name' => 'FeedBurner',
-			'version' => '1.4',
+			'version' => '1.5',
 			'url' => 'http://habariproject.org/',
 			'author' =>	'Habari Community',
 			'authorurl' => 'http://habariproject.org/',
@@ -93,13 +93,13 @@ class FeedBurner extends Plugin
 		}
 	}
 
-	public function filter_dash_module_feedburner ( $module_id )
+	public function filter_dash_module_feedburner( $module_id )
 	{
-		return
-			'<div class="modulecore">' . 
-			'<h2>Feedburner Stats</h2><div class="handle">&nbsp;</div>' . "\n" .
-			$this->theme_feedburner_stats() .
-			'</div>';
+		$theme= Themes::create( 'feedburner', 'RawPHPEngine', dirname( __FILE__ ) . '/' );
+
+		$theme->stats= $this->theme_feedburner_stats();
+
+		return $theme->fetch( 'dash_feedburner' );
 	}
 
 	public function theme_feedburner_stats()
@@ -112,16 +112,7 @@ class FeedBurner extends Plugin
 			Cache::set( 'feedburner_stats', $stats );
 		}
 
-		$stats_table= '<ul class="items">'. "\n";
-		foreach ( $stats as $key => $count ) {
-			$stats_table.= '<li class="item clear">' . "\n";
-			$stats_table.= '<span class="pct90">' . "{$key}</span>\n";
-			$stats_table.= '<span class="comments pct10">' . "{$count}</span>\n";
-			$stats_table.= "</li>\n";
-		}
-		$stats_table.= "</ul>\n";
-
-		return $stats_table;
+		return $stats;
 	}
 
 	private function get_stats()
