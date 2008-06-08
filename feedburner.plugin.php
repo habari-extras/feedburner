@@ -33,14 +33,25 @@ class FeedBurner extends Plugin
 	/**
 	 * Saves default (example) data
 	 */
-	public function action_plugin_activation()
+	public function action_plugin_activation( $file )
 	{
-		if ( !Options::get( 'feedburner__installed' ) ) {
-			Options::set( 'feedburner__introspection', 'http://feeds.feedburner.com/HabariProject' );
-			Options::set( 'feedburner__collection', 'http://feeds.feedburner.com/HabariProject' );
-			Options::set( 'feedburner__comments', 'http://feeds.feedburner.com/HabariProject/comments' );
-			self::reset_exclusions();
-			Options::set( 'feedburner__installed', true );
+		if ( realpath( $file ) == __FILE__ ) {
+			Modules::register( 'Feedburner' );
+			Modules::add( 'Feedburner' );
+			if ( !Options::get( 'feedburner__installed' ) ) {
+				Options::set( 'feedburner__introspection', 'http://feeds.feedburner.com/HabariProject' );
+				Options::set( 'feedburner__collection', 'http://feeds.feedburner.com/HabariProject' );
+				Options::set( 'feedburner__comments', 'http://feeds.feedburner.com/HabariProject/comments' );
+				self::reset_exclusions();
+				Options::set( 'feedburner__installed', true );
+			}
+		}
+	}
+
+	public function action_plugin_unactivation( $file )
+	{
+		if ( realpath( $file ) == __FILE__ ) {
+			Modules::unregister( 'Feedburner' );
 		}
 	}
 
@@ -82,19 +93,14 @@ class FeedBurner extends Plugin
 		}
 	}
 
-	public function filter_admin_modules( $modules )
+	public function filter_dash_module_feedburner ( $module_id )
 	{
-		$modules['feedburner:1']= array( 
-			'name' => 'feedburner', 
-			'content' => 
-				'<div class="modulecore">' . 
-				'<h2>Feedburner Stats</h2><div class="handle">&nbsp;</div>' . "\n" .
-				$this->theme_feedburner_stats() .
-				'</div>'
-			);
-		return $modules;
+		return
+			'<div class="modulecore">' . 
+			'<h2>Feedburner Stats</h2><div class="handle">&nbsp;</div>' . "\n" .
+			$this->theme_feedburner_stats() .
+			'</div>';
 	}
-
 
 	public function theme_feedburner_stats()
 	{
