@@ -1,3 +1,4 @@
+<div class="close">&nbsp;</div>
 <div class="modulecore">
 	<h2>Feedburner Stats</h2><div class="handle">&nbsp;</div>
 	<ul class="items">
