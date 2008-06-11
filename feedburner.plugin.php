@@ -36,7 +36,6 @@ class FeedBurner extends Plugin
 	public function action_plugin_activation( $file )
 	{
 		if ( realpath( $file ) == __FILE__ ) {
-			Modules::register( 'Feedburner' );
 			Modules::add( 'Feedburner' );
 			if ( !Options::get( 'feedburner__installed' ) ) {
 				Options::set( 'feedburner__introspection', 'http://feeds.feedburner.com/HabariProject' );
@@ -51,8 +50,15 @@ class FeedBurner extends Plugin
 	public function action_plugin_deactivation( $file )
 	{
 		if ( realpath( $file ) == __FILE__ ) {
-			Modules::unregister( 'Feedburner' );
+			Modules::remove_by_name( 'Feedburner' );
 		}
+	}
+
+	public function filter_dash_modules( $modules )
+	{
+		array_push( $modules, 'Feedburner' );
+		$this->add_template( 'dash_feedburner', dirname( __FILE__ ) . '/dash_feedburner.php' );
+		return $modules;
 	}
 
 	/**
@@ -93,13 +99,12 @@ class FeedBurner extends Plugin
 		}
 	}
 
-	public function filter_dash_module_feedburner( $module_id )
+	public function filter_dash_module_feedburner( $module, $module_id, $theme )
 	{
-		$theme= Themes::create( 'feedburner', 'RawPHPEngine', dirname( __FILE__ ) . '/' );
+		$theme->feedburner_stats= $this->theme_feedburner_stats();
 
-		$theme->stats= $this->theme_feedburner_stats();
-
-		return $theme->fetch( 'dash_feedburner' );
+		$module['content']= $theme->fetch( 'dash_feedburner' );
+		return $module;
 	}
 
 	public function theme_feedburner_stats()
