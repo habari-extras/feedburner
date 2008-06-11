@@ -56,7 +56,7 @@ class FeedBurner extends Plugin
 
 	public function filter_dash_modules( $modules )
 	{
-		array_push( $modules, 'Feedburner' );
+		$modules[]= 'Feedburner';
 		$this->add_template( 'dash_feedburner', dirname( __FILE__ ) . '/dash_feedburner.php' );
 		return $modules;
 	}
