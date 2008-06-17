@@ -31,6 +31,14 @@ class FeedBurner extends Plugin
 	}
 
 	/**
+	 * Add update beacon support
+	 **/
+	public function action_update_check()
+	{
+	 	Update::add( 'FeedBurner', '856031d0-3c7f-11dd-ae16-0800200c9a66', $this->info->version );
+	}
+
+	/**
 	 * Saves default (example) data
 	 */
 	public function action_plugin_activation( $file )
