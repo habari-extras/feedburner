@@ -6,6 +6,4 @@
 			<span class="comments pct10"><?php echo $count; ?></span>
 		<li>
 <?php endforeach ?>
-	<ul>
-
-
+	</ul>
