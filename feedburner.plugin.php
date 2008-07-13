@@ -130,19 +130,20 @@ class FeedBurner extends Plugin
 
 	private function get_stats()
 	{
-		$stats= array();
+		$stats = array();
 		foreach ( self::$feed_groups as $type => $feeds ) {
-			$readers= array();
-			$reach= array();
-			$reader_str= "FeedBurner Readers ({$type})";
-			$reach_str= "FeedBurner Reach ({$type})";
+			$readers = array();
+			$reach = array();
+			$reader_str = "FeedBurner Readers ({$type})";
+			$reach_str = "FeedBurner Reach ({$type})";
 			foreach ( $feeds as $feed ) {
 				if ( $feed_url = Options::get( 'feedburner__' . $feed ) ) {
-					$awareness_api= 'http://api.feedburner.com/awareness/1.0/GetFeedData?uri=' . $feed_url;
-					$request= new RemoteRequest( $awareness_api );
-					if ( !$request->execute() ) {
-						return;
+					$awareness_api = 'http://api.feedburner.com/awareness/1.0/GetFeedData?uri=' . $feed_url;
+					$request = new RemoteRequest( $awareness_api );
+					if ( Error::is_error( $request->execute() ) ) {
+						continue;
 					}
+
 					$xml= simplexml_load_string( $request->get_response_body() );
 					if ( $xml['stat'] == 'fail' ) {
 						$stat_str= "{$xml->err['msg']} ({$type})";
