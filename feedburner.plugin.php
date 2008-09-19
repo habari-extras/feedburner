@@ -8,7 +8,7 @@ class FeedBurner extends Plugin
 	 *
 	 * You shouldn't have to edit this, that's why it is not in the FormUI (options)
 	 */
-	private static $feed_groups= array(
+	private static $feed_groups = array(
 		'entries' => array( 'introspection', 'collection' ),
 		'comments' => array( 'comments' ),
 	);
@@ -91,10 +91,10 @@ class FeedBurner extends Plugin
 	 */
 	public function action_init_atom()
 	{
-		$action= Controller::get_action();
-		$feed_url= Options::get( 'feedburner__' . $action );
-		$exclude_ips= Options::get( 'feedburner__exlude_ips' );
-		$exclude_agents= Options::get( 'feedburner__exclude_agents' );
+		$action = Controller::get_action();
+		$feed_url = Options::get( 'feedburner__' . $action );
+		$exclude_ips = Options::get( 'feedburner__exlude_ips' );
+		$exclude_agents = Options::get( 'feedburner__exclude_agents' );
 
 		if ( $feed_url != '' ) {
 			if ( !in_array( $_SERVER['REMOTE_ADDR'], ( array ) $exclude_ips ) ) {
@@ -109,7 +109,7 @@ class FeedBurner extends Plugin
 
 	public function filter_dash_module_feedburner( $module, $module_id, $theme )
 	{
-		$theme->feedburner_stats= $this->theme_feedburner_stats();
+		$theme->feedburner_stats = $this->theme_feedburner_stats();
 
 		$module['content']= $theme->fetch( 'dash_feedburner' );
 		return $module;
@@ -118,10 +118,10 @@ class FeedBurner extends Plugin
 	public function theme_feedburner_stats()
 	{
 		if ( Cache::has( 'feedburner_stats' ) ) {
-			$stats= Cache::get( 'feedburner_stats' );
+			$stats = Cache::get( 'feedburner_stats' );
 		}
 		else {
-			$stats= $this->get_stats();
+			$stats = $this->get_stats();
 			Cache::set( 'feedburner_stats', $stats );
 		}
 
@@ -144,9 +144,9 @@ class FeedBurner extends Plugin
 						continue;
 					}
 
-					$xml= simplexml_load_string( $request->get_response_body() );
+					$xml = simplexml_load_string( $request->get_response_body() );
 					if ( $xml['stat'] == 'fail' ) {
-						$stat_str= "{$xml->err['msg']} ({$type})";
+						$stat_str = "{$xml->err['msg']} ({$type})";
 						$stats[$stat_str]= '';
 					}
 					else {
@@ -189,19 +189,19 @@ class FeedBurner extends Plugin
 		if ( $plugin_id == $this->plugin_id ) {
 			switch ( $action ) {
 				case 'Configure':
-					$fb= new FormUI( 'feedburner' );
-					$fb_assignments= $fb->append( 'fieldset', 'feed_assignments', 'Feed Assignments' );
-					$fb_introspection= $fb_assignments->append( 'text', 'introspection', 'feedburner__introspection', 'Introspection:' );
+					$fb = new FormUI( 'feedburner' );
+					$fb_assignments = $fb->append( 'fieldset', 'feed_assignments', 'Feed Assignments' );
+					$fb_introspection = $fb_assignments->append( 'text', 'introspection', 'feedburner__introspection', 'Introspection:' );
 					$fb_introspection->add_validator( 'validate_url' );
-					$fb_collection= $fb_assignments->append( 'text', 'collection', 'feedburner__collection', 'Collection:' );
+					$fb_collection = $fb_assignments->append( 'text', 'collection', 'feedburner__collection', 'Collection:' );
 					$fb_collection->add_validator( 'validate_url' );
-					$fb_comments= $fb_assignments->append( 'text', 'comments', 'feedburner__comments', 'Comments:' );
+					$fb_comments = $fb_assignments->append( 'text', 'comments', 'feedburner__comments', 'Comments:' );
 					$fb_comments->add_validator( 'validate_url' );
 
-					$fb_exclusions= $fb->append( 'fieldset', 'exclusions', 'Exclusions' );
-					$fb_exclusions_text= $fb_exclusions->append( 'static', 'exclusions', '<p>Exclusions will not be redirected to the Feedburner service.<br><strong>Do not remove default exclusions, else the plugin will break.</strong>' );
-					$fb_agents= $fb_exclusions->append( 'textmulti', 'exclude_agents', 'feedburner__exclude_agents', 'Agents to exclude', Options::get( 'feedburner__exclude_agents' ) );
-					$fb_ips= $fb_exclusions->append( 'textmulti', 'exclude_ips', 'feedburner__exclude_ips', 'IPs to exclude', Options::get( 'feedburner__exclude_ips' ) );
+					$fb_exclusions = $fb->append( 'fieldset', 'exclusions', 'Exclusions' );
+					$fb_exclusions_text = $fb_exclusions->append( 'static', 'exclusions', '<p>Exclusions will not be redirected to the Feedburner service.<br><strong>Do not remove default exclusions, else the plugin will break.</strong>' );
+					$fb_agents = $fb_exclusions->append( 'textmulti', 'exclude_agents', 'feedburner__exclude_agents', 'Agents to exclude', Options::get( 'feedburner__exclude_agents' ) );
+					$fb_ips = $fb_exclusions->append( 'textmulti', 'exclude_ips', 'feedburner__exclude_ips', 'IPs to exclude', Options::get( 'feedburner__exclude_ips' ) );
 					$fb->append( 'submit', 'save', _t( 'Save' ) );
 
 					$fb->set_option( 'success_message', _t( 'Configuration saved' ) );
@@ -209,13 +209,13 @@ class FeedBurner extends Plugin
 					break;
 				case 'Reset Exclusions':
 					if ( self::reset_exclusions() ) {
-						$fb= new FormUI( 'feedburner' );
+						$fb = new FormUI( 'feedburner' );
 						$fb->append( 'static', 'reset_exclusions', 'feedburner__reset_exclusions', '<p>The exclusions lists have been reset to the defaults.</p>' );
 						$fb->set_option( 'save_button', false );
 						$fb->out();
 					}
 					else {
-						$fb= new FormUI( 'feedburner' );
+						$fb = new FormUI( 'feedburner' );
 						$fb->append( 'static', 'reset_exclusions', 'feedburner__reset_exclusions', '<p>An error occurred while trying to reset the exclusions lists, please try again or report the problem.</p>' );
 						$fb->set_option( 'save_button', false );
 						$fb->out();
