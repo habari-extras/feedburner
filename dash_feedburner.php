@@ -4,6 +4,6 @@
 		<li class="item clear">
 			<span class="pct90"><?php echo $key; ?></span>
 			<span class="comments pct10"><?php echo $count; ?></span>
-		<li>
+		</li>
 <?php endforeach ?>
 	</ul>
