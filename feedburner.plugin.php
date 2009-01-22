@@ -138,7 +138,7 @@ class FeedBurner extends Plugin
 			$reach_str = "FeedBurner Reach ({$type})";
 			foreach ( $feeds as $feed ) {
 				if ( $feed_url = Options::get( 'feedburner__' . $feed ) ) {
-					$awareness_api = 'http://api.feedburner.com/awareness/1.0/GetFeedData?uri=' . $feed_url;
+					$awareness_api = 'https://feedburner.google.com/api/awareness/1.0/GetFeedData?uri=' . $feed_url;
 					$request = new RemoteRequest( $awareness_api );
 					if ( Error::is_error( $request->execute() ) ) {
 						continue;
