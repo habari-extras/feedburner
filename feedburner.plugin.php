@@ -96,7 +96,7 @@ class FeedBurner extends Plugin
 		$exclude_ips = Options::get( 'feedburner__exlude_ips' );
 		$exclude_agents = Options::get( 'feedburner__exclude_agents' );
 
-		if ( $feed_url != '' ) {
+		if ( $feed_uri != '' ) {
 			if ( !in_array( $_SERVER['REMOTE_ADDR'], ( array ) $exclude_ips ) ) {
 				if ( isset( $_SERVER['HTTP_USER_AGENT'] ) && !in_array( $_SERVER['HTTP_USER_AGENT'], ( array ) $exclude_agents ) ) {
 					ob_clean();
@@ -141,6 +141,7 @@ class FeedBurner extends Plugin
 					$awareness_api = 'https://feedburner.google.com/api/awareness/1.0/GetFeedData?uri=' . $feed_url;
 					$request = new RemoteRequest( $awareness_api );
 					if ( Error::is_error( $request->execute() ) ) {
+						EventLog::log('Unable to fetch FeedBurner stats for feed ' . $feed_url, 'error');
 						continue;
 					}
 
