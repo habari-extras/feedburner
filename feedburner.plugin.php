@@ -20,7 +20,7 @@ class FeedBurner extends Plugin
 	{
 		return array(
 			'name' => 'FeedBurner',
-			'version' => '1.5',
+			'version' => '1.6',
 			'url' => 'http://habariproject.org/',
 			'author' =>	'Habari Community',
 			'authorurl' => 'http://habariproject.org/',
@@ -46,9 +46,9 @@ class FeedBurner extends Plugin
 		if ( realpath( $file ) == __FILE__ ) {
 			Modules::add( 'Feedburner' );
 			if ( !Options::get( 'feedburner__installed' ) ) {
-				Options::set( 'feedburner__introspection', 'http://feeds.feedburner.com/HabariProject' );
-				Options::set( 'feedburner__collection', 'http://feeds.feedburner.com/HabariProject' );
-				Options::set( 'feedburner__comments', 'http://feeds.feedburner.com/HabariProject/comments' );
+				Options::set( 'feedburner__introspection', 'HabariProject' );
+				Options::set( 'feedburner__collection', 'HabariProject' );
+				Options::set( 'feedburner__comments', 'HabariProject/comments' );
 				self::reset_exclusions();
 				Options::set( 'feedburner__installed', true );
 			}
@@ -92,7 +92,7 @@ class FeedBurner extends Plugin
 	public function action_init_atom()
 	{
 		$action = Controller::get_action();
-		$feed_url = Options::get( 'feedburner__' . $action );
+		$feed_uri = Options::get( 'feedburner__' . $action );
 		$exclude_ips = Options::get( 'feedburner__exlude_ips' );
 		$exclude_agents = Options::get( 'feedburner__exclude_agents' );
 
@@ -100,7 +100,7 @@ class FeedBurner extends Plugin
 			if ( !in_array( $_SERVER['REMOTE_ADDR'], ( array ) $exclude_ips ) ) {
 				if ( isset( $_SERVER['HTTP_USER_AGENT'] ) && !in_array( $_SERVER['HTTP_USER_AGENT'], ( array ) $exclude_agents ) ) {
 					ob_clean();
-					header( 'Location: ' . $feed_url, TRUE, 302 );
+					header( 'Location: http://feedproxy.google.com/' . $feed_uri, TRUE, 302 );
 					die();
 				}
 			}
@@ -192,11 +192,8 @@ class FeedBurner extends Plugin
 					$fb = new FormUI( 'feedburner' );
 					$fb_assignments = $fb->append( 'fieldset', 'feed_assignments', 'Feed Assignments' );
 					$fb_introspection = $fb_assignments->append( 'text', 'introspection', 'feedburner__introspection', 'Introspection:' );
-					$fb_introspection->add_validator( 'validate_url' );
 					$fb_collection = $fb_assignments->append( 'text', 'collection', 'feedburner__collection', 'Collection:' );
-					$fb_collection->add_validator( 'validate_url' );
 					$fb_comments = $fb_assignments->append( 'text', 'comments', 'feedburner__comments', 'Comments:' );
-					$fb_comments->add_validator( 'validate_url' );
 
 					$fb_exclusions = $fb->append( 'fieldset', 'exclusions', 'Exclusions' );
 					$fb_exclusions_text = $fb_exclusions->append( 'static', 'exclusions', '<p>Exclusions will not be redirected to the Feedburner service.<br><strong>Do not remove default exclusions, else the plugin will break.</strong>' );
