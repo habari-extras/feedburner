@@ -14,23 +14,6 @@ class FeedBurner extends Plugin
 	);
 
 	/**
-	 * Required Plugin Informations
-	 */
-	public function info()
-	{
-		return array(
-			'name' => 'FeedBurner',
-			'version' => '1.6',
-			'url' => 'http://habariproject.org/',
-			'author' =>	'Habari Community',
-			'authorurl' => 'http://habariproject.org/',
-			'license' => 'Apache License 2.0',
-			'description' => 'Feedburner plugin for Habari',
-			'copyright' => '2007'
-		);
-	}
-
-	/**
 	 * Add update beacon support
 	 **/
 	public function action_update_check()
