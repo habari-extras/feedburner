@@ -1,6 +1,7 @@
 <?php
 class FeedBurner extends Plugin
 {
+	private static $version = 1.7;
 	/**
 	 * Feed groups used in the dashboard statistics module
 	 * The key is the title of the statistic,
@@ -18,7 +19,25 @@ class FeedBurner extends Plugin
 	 **/
 	public function action_update_check()
 	{
-	 	Update::add( 'FeedBurner', '856031d0-3c7f-11dd-ae16-0800200c9a66', $this->info->version );
+	 	Update::add( 'FeedBurner', '856031d0-3c7f-11dd-ae16-0800200c9a66', self::$version );
+	}
+
+	/**
+	 * The help message - it provides a larger explanation of what this plugin
+	 * does and how to use it.
+	 *
+	 * @return string
+	 */
+	public function help()
+	{
+		$help = '<p>'. _t( 'Feedburner plugin for Habari allows you to redirect your feeds to FeedBurner. It also adds a dashboard module displaying the feed statistics for each feed.' ) . '</p>';
+		$help .= '<h3>' . _t( 'Usage:') .'</h3>';
+		$help .= '<ul><li>' . _t( 'Feed Assignments: Enter the name you\'ve assigned to your the respective entries and comments feeds on Feedburner. This is the last part of the FeedBurner URL. For example, if your FeedBurner feed URL is http://feeds.feedburner.com/MainFeed, then enter "MainFeed" into the appropriate box.') . '</li>';
+		$help .= '<li>' . _t( 'Exclusions: Use this section to specify user agents and IP addresses that you do not wish to be redirected to FeedBurner. The default values provided are there to prevent FeedBurner\'s bots being redirected back to itself, so do NOT delete these.') . '</li>';
+		$help .= '</ul></p>';
+		$help .= '<h3>' . _t( 'Dashboard Statistics Module' ) . '</h3>';
+		$help .= '<p>' ._t( 'The dashboard statistics module is enabled by default, however in order to see your statistics within the dashboard, you need to enable the "Awareness API" within the "Publicize" tab of your feed settings on feedburner.com.' ) . '</p>';
+		return $help;
 	}
 
 	/**
@@ -123,8 +142,13 @@ class FeedBurner extends Plugin
 				if ( $feed_url = Options::get( 'feedburner__' . $feed ) ) {
 					$awareness_api = 'https://feedburner.google.com/api/awareness/1.0/GetFeedData?uri=' . $feed_url;
 					$request = new RemoteRequest( $awareness_api );
-					if ( Error::is_error( $request->execute() ) ) {
-						EventLog::log('Unable to fetch FeedBurner stats for feed ' . $feed_url, 'error');
+					$response = $request->execute();
+					if ( Error::is_error( $response ) ) {
+						$error = _t( 'Unable to fetch FeedBurner stats for feed ' ) . $feed_url;
+						if ( strpos( $response->getMessage(), '401') ) {
+							$stats[_t( 'Please enable "Awareness API" access for ' ) . $feed_url] = '';
+						}
+						EventLog::log( $error, 'err');
 						continue;
 					}
 
@@ -153,7 +177,8 @@ class FeedBurner extends Plugin
 	 * @param string $plugin_id A unique plugin ID, it needs to match ours.
 	 * @return array Original array with our added menu.
 	 */
-	public function filter_plugin_config( $actions, $plugin_id ) {
+	public function filter_plugin_config( $actions, $plugin_id )
+	{
 		if ( $plugin_id == $this->plugin_id ) {
 			$actions[]= 'Configure';
 			$actions[]= 'Reset Exclusions';
@@ -169,20 +194,21 @@ class FeedBurner extends Plugin
 	 * @param string $plugin_id A unique plugin ID, it needs to match ours.
 	 * @param string $action The menu item the user clicked.
 	 */
-	public function action_plugin_ui( $plugin_id, $action ) {
+	public function action_plugin_ui( $plugin_id, $action )
+	{
 		if ( $plugin_id == $this->plugin_id ) {
 			switch ( $action ) {
 				case 'Configure':
 					$fb = new FormUI( 'feedburner' );
-					$fb_assignments = $fb->append( 'fieldset', 'feed_assignments', 'Feed Assignments' );
-					$fb_introspection = $fb_assignments->append( 'text', 'introspection', 'feedburner__introspection', 'Introspection:' );
-					$fb_collection = $fb_assignments->append( 'text', 'collection', 'feedburner__collection', 'Collection:' );
-					$fb_comments = $fb_assignments->append( 'text', 'comments', 'feedburner__comments', 'Comments:' );
+					$fb_assignments = $fb->append( 'fieldset', 'feed_assignments', _t( 'Feed Assignments' ) );
+					$fb_introspection = $fb_assignments->append( 'text', 'introspection', 'feedburner__introspection', _t( 'Introspection:' ) );
+					$fb_collection = $fb_assignments->append( 'text', 'collection', 'feedburner__collection', _t( 'Collection:' ) );
+					$fb_comments = $fb_assignments->append( 'text', 'comments', 'feedburner__comments', _t( 'Comments:' ) );
 
-					$fb_exclusions = $fb->append( 'fieldset', 'exclusions', 'Exclusions' );
-					$fb_exclusions_text = $fb_exclusions->append( 'static', 'exclusions', '<p>Exclusions will not be redirected to the Feedburner service.<br><strong>Do not remove default exclusions, else the plugin will break.</strong>' );
-					$fb_agents = $fb_exclusions->append( 'textmulti', 'exclude_agents', 'feedburner__exclude_agents', 'Agents to exclude', Options::get( 'feedburner__exclude_agents' ) );
-					$fb_ips = $fb_exclusions->append( 'textmulti', 'exclude_ips', 'feedburner__exclude_ips', 'IPs to exclude', Options::get( 'feedburner__exclude_ips' ) );
+					$fb_exclusions = $fb->append( 'fieldset', 'exclusions', _t( 'Exclusions' ) );
+					$fb_exclusions_text = $fb_exclusions->append( 'static', 'exclusions', '<p>'._t( 'Exclusions will not be redirected to the Feedburner service.' ).'<br><strong>'._t( 'Do not remove default exclusions, else the plugin will break.' ).'</strong>' );
+					$fb_agents = $fb_exclusions->append( 'textmulti', 'exclude_agents', 'feedburner__exclude_agents', _t( 'Agents to exclude' ) );
+					$fb_ips = $fb_exclusions->append( 'textmulti', 'exclude_ips', 'feedburner__exclude_ips', _t( 'IPs to exclude' ) );
 					$fb->append( 'submit', 'save', _t( 'Save' ) );
 
 					$fb->set_option( 'success_message', _t( 'Configuration saved' ) );
@@ -191,13 +217,13 @@ class FeedBurner extends Plugin
 				case 'Reset Exclusions':
 					if ( self::reset_exclusions() ) {
 						$fb = new FormUI( 'feedburner' );
-						$fb->append( 'static', 'reset_exclusions', 'feedburner__reset_exclusions', '<p>The exclusions lists have been reset to the defaults.</p>' );
+						$fb->append( 'static', 'reset_exclusions', '<p>'._t( 'The exclusions lists have been reset to the defaults.') .'</p>' );
 						$fb->set_option( 'save_button', false );
 						$fb->out();
 					}
 					else {
 						$fb = new FormUI( 'feedburner' );
-						$fb->append( 'static', 'reset_exclusions', 'feedburner__reset_exclusions', '<p>An error occurred while trying to reset the exclusions lists, please try again or report the problem.</p>' );
+						$fb->append( 'static', 'reset_exclusions', '<p>'._t( 'An error occurred while trying to reset the exclusions lists, please try again or report the problem.' ).'</p>' );
 						$fb->set_option( 'save_button', false );
 						$fb->out();
 					}
