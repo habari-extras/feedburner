@@ -32,7 +32,7 @@ class FeedBurner extends Plugin
 	{
 		$help = '<p>'. _t( 'Feedburner plugin for Habari allows you to redirect your feeds to FeedBurner. It also adds a dashboard module displaying the feed statistics for each feed.' ) . '</p>';
 		$help .= '<h3>' . _t( 'Usage:') .'</h3>';
-		$help .= '<ul><li>' . _t( 'Feed Assignments: Enter the name you\'ve assigned to your the respective entries and comments feeds on Feedburner. This is the last part of the FeedBurner URL. For example, if your FeedBurner feed URL is http://feeds.feedburner.com/MainFeed, then enter "MainFeed" into the appropriate box.') . '</li>';
+		$help .= '<ul><li>' . _t( 'Feed Assignments: Enter the name you\'ve assigned to your respective entries and comments feeds on Feedburner. This is the last part of the FeedBurner URL. For example, if your FeedBurner feed URL is http://feeds.feedburner.com/MainFeed, then enter "MainFeed" into the appropriate box.') . '</li>';
 		$help .= '<li>' . _t( 'Exclusions: Use this section to specify user agents and IP addresses that you do not wish to be redirected to FeedBurner. The default values provided are there to prevent FeedBurner\'s bots being redirected back to itself, so do NOT delete these.') . '</li>';
 		$help .= '</ul></p>';
 		$help .= '<h3>' . _t( 'Dashboard Statistics Module' ) . '</h3>';
