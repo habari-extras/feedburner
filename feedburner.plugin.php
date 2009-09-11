@@ -1,7 +1,7 @@
 <?php
 class FeedBurner extends Plugin
 {
-	private static $version = 1.7;
+	private static $version = 1.8;
 	/**
 	 * Feed groups used in the dashboard statistics module
 	 * The key is the title of the statistic,
@@ -10,7 +10,7 @@ class FeedBurner extends Plugin
 	 * You shouldn't have to edit this, that's why it is not in the FormUI (options)
 	 */
 	private static $feed_groups = array(
-		'entries' => array( 'introspection', 'collection' ),
+		'entries' => array( 'collection' ),
 		'comments' => array( 'comments' ),
 	);
 
@@ -48,12 +48,21 @@ class FeedBurner extends Plugin
 		if ( realpath( $file ) == __FILE__ ) {
 			Modules::add( 'Feedburner' );
 			if ( !Options::get( 'feedburner__installed' ) ) {
-				Options::set( 'feedburner__introspection', 'HabariProject' );
-				Options::set( 'feedburner__collection', 'HabariProject' );
-				Options::set( 'feedburner__comments', 'HabariProject/comments' );
+				Options::set( 'feedburner__collection', '' );
+				Options::set( 'feedburner__comments', '' );
 				self::reset_exclusions();
 				Options::set( 'feedburner__installed', true );
 			}
+		}
+	}
+
+	/**
+	 * Deletes old, unused option after upgrading
+	 */
+	public function action_init()
+	{
+		if ( Options::get( 'feedburner__introspection' ) ) {
+			Options::delete( 'feedburner__introspection' );
 		}
 	}
 
@@ -201,9 +210,8 @@ class FeedBurner extends Plugin
 				case 'Configure':
 					$fb = new FormUI( 'feedburner' );
 					$fb_assignments = $fb->append( 'fieldset', 'feed_assignments', _t( 'Feed Assignments' ) );
-					$fb_introspection = $fb_assignments->append( 'text', 'introspection', 'feedburner__introspection', _t( 'Introspection:' ) );
-					$fb_collection = $fb_assignments->append( 'text', 'collection', 'feedburner__collection', _t( 'Collection:' ) );
-					$fb_comments = $fb_assignments->append( 'text', 'comments', 'feedburner__comments', _t( 'Comments:' ) );
+					$fb_collection = $fb_assignments->append( 'text', 'collection', 'feedburner__collection', _t( 'Site-wide Posts Atom Feed:' ) );
+					$fb_comments = $fb_assignments->append( 'text', 'comments', 'feedburner__comments', _t( 'Site-wide Comment Atom Feed:' ) );
 
 					$fb_exclusions = $fb->append( 'fieldset', 'exclusions', _t( 'Exclusions' ) );
 					$fb_exclusions_text = $fb_exclusions->append( 'static', 'exclusions', '<p>'._t( 'Exclusions will not be redirected to the Feedburner service.' ).'<br><strong>'._t( 'Do not remove default exclusions, else the plugin will break.' ).'</strong>' );
