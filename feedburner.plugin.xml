@@ -3,7 +3,7 @@
 	<name>FeedBurner</name>
 	<license url="http://www.apache.org/licenses/LICENSE-2.0.html">Apache Software License 2.0</license>
 	<author url="http://habariproject.org/">Habari Community</author>
-	<version>1.8</version>
+	<version>1.9</version>
 	<url>http://habariproject.org/</url>
 	<description><![CDATA[Feedburner plugin for Habari.]]></description>
 	<copyright>2009</copyright>

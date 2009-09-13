@@ -1,7 +1,7 @@
 <?php
 class FeedBurner extends Plugin
 {
-	private static $version = 1.8;
+	private static $version = 1.9;
 	/**
 	 * Feed groups used in the dashboard statistics module
 	 * The key is the title of the statistic,
@@ -145,8 +145,12 @@ class FeedBurner extends Plugin
 		foreach ( self::$feed_groups as $type => $feeds ) {
 			$readers = array();
 			$reach = array();
-			$reader_str = "FeedBurner Readers ({$type})";
-			$reach_str = "FeedBurner Reach ({$type})";
+			$hits = array();
+			$downloads = array();
+			$reader_str = _t( "FeedBurner Readers ({$type})" );
+			$reach_str = _t( "FeedBurner Reach ({$type})" );
+			$hits_str = _t( "FeedBurner Hits ({$type})" );
+			$downloads_str = _t( "FeedBurner Enclosure Downloads ({$type})" );
 			foreach ( $feeds as $feed ) {
 				if ( $feed_url = Options::get( 'feedburner__' . $feed ) ) {
 					$awareness_api = 'https://feedburner.google.com/api/awareness/1.0/GetFeedData?uri=' . $feed_url;
@@ -171,6 +175,14 @@ class FeedBurner extends Plugin
 						$reach[$feed_url]= ( string ) $xml->feed->entry['reach'];
 						$stats[$reader_str]= array_sum( $readers );
 						$stats[$reach_str]= array_sum( $reach );
+						if ( $xml->feed->entry['hits'] ) {
+							$hits[$feed_url]= ( string ) $xml->feed->entry['hits'];
+							$stats[$hits_str]= array_sum ( $hits );
+						}
+						if ( $xml->feed->entry['downloads'] ) {
+							$downloads[$feed_url]= ( string ) $xml->feed->entry['downloads'];
+							$stats[$downloads_str]= array_sum ( $downloads );
+						}
 					}
 				}
 			}
