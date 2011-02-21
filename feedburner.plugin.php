@@ -15,14 +15,6 @@ class FeedBurner extends Plugin
 	);
 
 	/**
-	 * Add update beacon support
-	 **/
-	public function action_update_check()
-	{
-	 	Update::add( 'FeedBurner', '856031d0-3c7f-11dd-ae16-0800200c9a66', self::$version );
-	}
-
-	/**
 	 * The help message - it provides a larger explanation of what this plugin
 	 * does and how to use it.
 	 *
@@ -201,54 +193,42 @@ class FeedBurner extends Plugin
 	public function filter_plugin_config( $actions, $plugin_id )
 	{
 		if ( $plugin_id == $this->plugin_id ) {
-			$actions[]= 'Configure';
-			$actions[]= 'Reset Exclusions';
+			$actions['reset'] = _t( 'Reset Exclusions' );
 		}
 
 		return $actions;
 	}
 
-	/**
-	 * Handle calls from FormUI actions.
-	 * Show the form to manage the plugin's options.
-	 *
-	 * @param string $plugin_id A unique plugin ID, it needs to match ours.
-	 * @param string $action The menu item the user clicked.
-	 */
-	public function action_plugin_ui( $plugin_id, $action )
+	public function configure()
 	{
-		if ( $plugin_id == $this->plugin_id ) {
-			switch ( $action ) {
-				case 'Configure':
-					$fb = new FormUI( 'feedburner' );
-					$fb_assignments = $fb->append( 'fieldset', 'feed_assignments', _t( 'Feed Assignments' ) );
-					$fb_collection = $fb_assignments->append( 'text', 'collection', 'feedburner__collection', _t( 'Site-wide Posts Atom Feed:' ) );
-					$fb_comments = $fb_assignments->append( 'text', 'comments', 'feedburner__comments', _t( 'Site-wide Comment Atom Feed:' ) );
+		$fb = new FormUI( 'feedburner' );
+		$fb_assignments = $fb->append( 'fieldset', 'feed_assignments', _t( 'Feed Assignments' ) );
+		$fb_collection = $fb_assignments->append( 'text', 'collection', 'feedburner__collection', _t( 'Site-wide Posts Atom Feed:' ) );
+		$fb_comments = $fb_assignments->append( 'text', 'comments', 'feedburner__comments', _t( 'Site-wide Comment Atom Feed:' ) );
 
-					$fb_exclusions = $fb->append( 'fieldset', 'exclusions', _t( 'Exclusions' ) );
-					$fb_exclusions_text = $fb_exclusions->append( 'static', 'exclusions', '<p>'._t( 'Exclusions will not be redirected to the Feedburner service.' ).'<br><strong>'._t( 'Do not remove default exclusions, else the plugin will break.' ).'</strong>' );
-					$fb_agents = $fb_exclusions->append( 'textmulti', 'exclude_agents', 'feedburner__exclude_agents', _t( 'Agents to exclude' ) );
-					$fb_ips = $fb_exclusions->append( 'textmulti', 'exclude_ips', 'feedburner__exclude_ips', _t( 'IPs to exclude' ) );
-					$fb->append( 'submit', 'save', _t( 'Save' ) );
+		$fb_exclusions = $fb->append( 'fieldset', 'exclusions', _t( 'Exclusions' ) );
+		$fb_exclusions_text = $fb_exclusions->append( 'static', 'exclusions', '<p>'._t( 'Exclusions will not be redirected to the Feedburner service.' ).'<br><strong>'._t( 'Do not remove default exclusions, else the plugin will break.' ).'</strong>' );
+		$fb_agents = $fb_exclusions->append( 'textmulti', 'exclude_agents', 'feedburner__exclude_agents', _t( 'Agents to exclude' ) );
+		$fb_ips = $fb_exclusions->append( 'textmulti', 'exclude_ips', 'feedburner__exclude_ips', _t( 'IPs to exclude' ) );
+		$fb->append( 'submit', 'save', _t( 'Save' ) );
 
-					$fb->set_option( 'success_message', _t( 'Configuration saved' ) );
-					$fb->out();
-					break;
-				case 'Reset Exclusions':
-					if ( self::reset_exclusions() ) {
-						$fb = new FormUI( 'feedburner' );
-						$fb->append( 'static', 'reset_exclusions', '<p>'._t( 'The exclusions lists have been reset to the defaults.') .'</p>' );
-						$fb->set_option( 'save_button', false );
-						$fb->out();
-					}
-					else {
-						$fb = new FormUI( 'feedburner' );
-						$fb->append( 'static', 'reset_exclusions', '<p>'._t( 'An error occurred while trying to reset the exclusions lists, please try again or report the problem.' ).'</p>' );
-						$fb->set_option( 'save_button', false );
-						$fb->out();
-					}
-					break;
-			}
+		$fb->set_option( 'success_message', _t( 'Configuration saved' ) );
+		$fb->out();
+	}
+
+	public function action_plugin_ui_reset( $plugin_id, $action )
+	{
+		if ( self::reset_exclusions() ) {
+			$fb = new FormUI( 'feedburner' );
+			$fb->append( 'static', 'reset_exclusions', '<p>'._t( 'The exclusions lists have been reset to the defaults.') .'</p>' );
+			$fb->set_option( 'save_button', false );
+			$fb->out();
+		}
+		else {
+			$fb = new FormUI( 'feedburner' );
+			$fb->append( 'static', 'reset_exclusions', '<p>'._t( 'An error occurred while trying to reset the exclusions lists, please try again or report the problem.' ).'</p>' );
+			$fb->set_option( 'save_button', false );
+			$fb->out();
 		}
 	}
 
