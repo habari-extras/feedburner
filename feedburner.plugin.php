@@ -99,7 +99,7 @@ class FeedBurner extends Plugin
 		$exclude_ips = Options::get( 'feedburner__exlude_ips' );
 		$exclude_agents = Options::get( 'feedburner__exclude_agents' );
 
-		if ( $feed_uri != '' ) {
+		if ( $feed_uri != '' && (!isset( URL::get_matched_rule()->named_arg_values['index']) || URL::get_matched_rule()->named_arg_values['index'] == 1 ) ) {
 			if ( !in_array( $_SERVER['REMOTE_ADDR'], ( array ) $exclude_ips ) ) {
 				if ( isset( $_SERVER['HTTP_USER_AGENT'] ) && !in_array( $_SERVER['HTTP_USER_AGENT'], ( array ) $exclude_agents ) ) {
 					ob_clean();
