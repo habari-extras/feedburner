@@ -1,7 +1,9 @@
-<?php
+<?php if ( !defined( 'HABARI_PATH' ) ) { die( 'No direct access' ); }
+
 class FeedBurner extends Plugin
 {
-	private static $version = 1.9;
+	private static $version = 2.0;
+
 	/**
 	 * Feed groups used in the dashboard statistics module
 	 * The key is the title of the statistic,
@@ -37,14 +39,11 @@ class FeedBurner extends Plugin
 	 */
 	public function action_plugin_activation( $file )
 	{
-		if ( realpath( $file ) == __FILE__ ) {
-			Modules::add( 'Feedburner' );
-			if ( !Options::get( 'feedburner__installed' ) ) {
-				Options::set( 'feedburner__collection', '' );
-				Options::set( 'feedburner__comments', '' );
-				self::reset_exclusions();
-				Options::set( 'feedburner__installed', true );
-			}
+		if ( !Options::get( 'feedburner__installed' ) ) {
+			Options::set( 'feedburner__collection', '' );
+			Options::set( 'feedburner__comments', '' );
+			self::reset_exclusions();
+			Options::set( 'feedburner__installed', true );
 		}
 	}
 
@@ -58,18 +57,29 @@ class FeedBurner extends Plugin
 		}
 	}
 
-	public function action_plugin_deactivation( $file )
+	/**
+	 * Add the block this plugin provides to the list of available blocks
+	 * @param array $block_list An array of block names, indexed by unique string identifiers
+	 * @return array The altered array
+	 */
+	public function filter_dashboard_block_list($block_list)
 	{
-		if ( realpath( $file ) == __FILE__ ) {
-			Modules::remove_by_name( 'Feedburner' );
-		}
+		$block_list['feedburner'] = _t( 'Feedburner Stats' );
+		$this->add_template( 'dashboard.block.feedburner', __DIR__ . '/dashboard.block.feedburner.php' );
+		return $block_list;
 	}
 
-	public function filter_dash_modules( $modules )
+	/**
+	 * Produce the content for the latest entries block
+	 * @param Block $block The block object
+	 * @param Theme $theme The theme that the block will be output with
+	 */
+
+	public function action_block_content_feedburner($block, $theme)
 	{
-		$modules[]= 'Feedburner';
-		$this->add_template( 'dash_feedburner', dirname( __FILE__ ) . '/dash_feedburner.php' );
-		return $modules;
+		$block->feedburner_stats = $this->theme_feedburner_stats();
+//		$block->title = _t( 'Feedburner Stats' );
+		$block->link = "http://feedburner.google.com";
 	}
 
 	/**
@@ -110,13 +120,6 @@ class FeedBurner extends Plugin
 		}
 	}
 
-	public function filter_dash_module_feedburner( $module, $module_id, $theme )
-	{
-		$theme->feedburner_stats = $this->theme_feedburner_stats();
-
-		$module['content']= $theme->fetch( 'dash_feedburner' );
-		return $module;
-	}
 
 	public function theme_feedburner_stats()
 	{
