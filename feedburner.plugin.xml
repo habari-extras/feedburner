@@ -4,7 +4,7 @@
 	<license url="http://www.apache.org/licenses/LICENSE-2.0.html">Apache Software License 2.0</license>
 	<author url="http://habariproject.org/">The Habari Community</author>
 	<guid>856031d0-3c7f-11dd-ae16-0800200c9a66</guid>
-	<version>2.0</version>
+	<version>2.1</version>
 	<url>http://habariproject.org/</url>
 	<description><![CDATA[Feedburner plugin for Habari.]]></description>
 	<copyright>2009</copyright>

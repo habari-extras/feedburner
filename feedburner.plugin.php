@@ -2,7 +2,7 @@
 
 class FeedBurner extends Plugin
 {
-	private static $version = 2.0;
+	private static $version = 2.1;
 
 	/**
 	 * Feed groups used in the dashboard statistics module
@@ -29,8 +29,6 @@ class FeedBurner extends Plugin
 		$help .= '<ul><li>' . _t( 'Feed Assignments: Enter the name you\'ve assigned to your respective entries and comments feeds on Feedburner. This is the last part of the FeedBurner URL. For example, if your FeedBurner feed URL is http://feeds.feedburner.com/MainFeed, then enter "MainFeed" into the appropriate box.') . '</li>';
 		$help .= '<li>' . _t( 'Exclusions: Use this section to specify user agents and IP addresses that you do not wish to be redirected to FeedBurner. The default values provided are there to prevent FeedBurner\'s bots being redirected back to itself, so do NOT delete these.') . '</li>';
 		$help .= '</ul></p>';
-		$help .= '<h3>' . _t( 'Dashboard Statistics Module' ) . '</h3>';
-		$help .= '<p>' ._t( 'The dashboard statistics module is enabled by default, however in order to see your statistics within the dashboard, you need to enable the "Awareness API" within the "Publicize" tab of your feed settings on feedburner.com.' ) . '</p>';
 		return $help;
 	}
 
@@ -55,31 +53,6 @@ class FeedBurner extends Plugin
 		if ( Options::get( 'feedburner__introspection' ) ) {
 			Options::delete( 'feedburner__introspection' );
 		}
-	}
-
-	/**
-	 * Add the block this plugin provides to the list of available blocks
-	 * @param array $block_list An array of block names, indexed by unique string identifiers
-	 * @return array The altered array
-	 */
-	public function filter_dashboard_block_list($block_list)
-	{
-		$block_list['feedburner'] = _t( 'Feedburner Stats' );
-		$this->add_template( 'dashboard.block.feedburner', __DIR__ . '/dashboard.block.feedburner.php' );
-		return $block_list;
-	}
-
-	/**
-	 * Produce the content for the latest entries block
-	 * @param Block $block The block object
-	 * @param Theme $theme The theme that the block will be output with
-	 */
-
-	public function action_block_content_feedburner($block, $theme)
-	{
-		$block->feedburner_stats = $this->theme_feedburner_stats();
-//		$block->title = _t( 'Feedburner Stats' );
-		$block->link = "http://feedburner.google.com";
 	}
 
 	/**
@@ -118,72 +91,6 @@ class FeedBurner extends Plugin
 				}
 			}
 		}
-	}
-
-
-	public function theme_feedburner_stats()
-	{
-		if ( Cache::has( 'feedburner_stats' ) ) {
-			$stats = Cache::get( 'feedburner_stats' );
-		}
-		else {
-			$stats = $this->get_stats();
-			Cache::set( 'feedburner_stats', $stats );
-		}
-
-		return $stats;
-	}
-
-	private function get_stats()
-	{
-		$stats = array();
-		foreach ( self::$feed_groups as $type => $feeds ) {
-			$readers = array();
-			$reach = array();
-			$hits = array();
-			$downloads = array();
-			$reader_str = _t( "FeedBurner Readers ({$type})" );
-			$reach_str = _t( "FeedBurner Reach ({$type})" );
-			$hits_str = _t( "FeedBurner Hits ({$type})" );
-			$downloads_str = _t( "FeedBurner Enclosure Downloads ({$type})" );
-			foreach ( $feeds as $feed ) {
-				if ( $feed_url = Options::get( 'feedburner__' . $feed ) ) {
-					$awareness_api = 'https://feedburner.google.com/api/awareness/1.0/GetFeedData?uri=' . $feed_url;
-					$request = new RemoteRequest( $awareness_api );
-					$response = $request->execute();
-					if ( Error::is_error( $response ) ) {
-						$error = _t( 'Unable to fetch FeedBurner stats for feed ' ) . $feed_url;
-						if ( strpos( $response->getMessage(), '401') ) {
-							$stats[_t( 'Please enable "Awareness API" access for ' ) . $feed_url] = '';
-						}
-						EventLog::log( $error, 'err');
-						continue;
-					}
-
-					$xml = simplexml_load_string( $request->get_response_body() );
-					if ( $xml['stat'] == 'fail' ) {
-						$stat_str = "{$xml->err['msg']} ({$type})";
-						$stats[$stat_str]= '';
-					}
-					else {
-						$readers[$feed_url]= ( string ) $xml->feed->entry['circulation'];
-						$reach[$feed_url]= ( string ) $xml->feed->entry['reach'];
-						$stats[$reader_str]= array_sum( $readers );
-						$stats[$reach_str]= array_sum( $reach );
-						if ( $xml->feed->entry['hits'] ) {
-							$hits[$feed_url]= ( string ) $xml->feed->entry['hits'];
-							$stats[$hits_str]= array_sum ( $hits );
-						}
-						if ( $xml->feed->entry['downloads'] ) {
-							$downloads[$feed_url]= ( string ) $xml->feed->entry['downloads'];
-							$stats[$downloads_str]= array_sum ( $downloads );
-						}
-					}
-				}
-			}
-		}
-
-		return $stats;
 	}
 
 	/**
@@ -232,6 +139,16 @@ class FeedBurner extends Plugin
 			$fb->append( 'static', 'reset_exclusions', '<p>'._t( 'An error occurred while trying to reset the exclusions lists, please try again or report the problem.' ).'</p>' );
 			$fb->set_option( 'save_button', false );
 			$fb->out();
+		}
+	}
+
+	public function action_upgrade( $last_version )
+	{
+		if( $last_version == 2.0 ) {
+			$block = DB::get_row('SELECT * FROM {blocks} WHERE type = :type;', array( 'type' => 'feedburner' ), 'Block' );
+			if( $block ) {
+				$block->delete();
+			}
 		}
 	}
 
